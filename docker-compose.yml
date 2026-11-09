@@ -1,0 +1,19 @@
+# 📌 [จุดประสงค์]: รัน PostgreSQL สำหรับพัฒนาบนเครื่อง
+#    เหมือนมี SQL Server instance ส่วนตัว ลบทิ้งสร้างใหม่ได้ในไม่กี่วินาที
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: todolist-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: todolist
+      POSTGRES_USER: todouser
+      POSTGRES_PASSWORD: todopass  # 🔒 ใช้ได้แค่บนเครื่องตัวเอง ห้ามใช้บน production
+    ports:
+      - "5432:5432"   # ⚠️ ถ้า Windows มี PostgreSQL ใช้พอร์ต 5432 อยู่แล้ว ให้เปลี่ยนเป็น "5433:5432"
+    volumes:
+      # ✅ เก็บข้อมูลไว้นอก container — ลบ container ทิ้ง ข้อมูลก็ยังอยู่
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

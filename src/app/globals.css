@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* 📌 [จุดประสงค์]: ชุดค่ากลางของทั้งแอป
+   ✅ Tailwind v4 สร้าง class ให้จากชื่อเหล่านี้อัตโนมัติ
+      --color-paper → bg-paper, text-paper, border-paper ...
+   เหมือนตั้ง Skin/Palette กลางใน DevExpress แทนการตั้งสีทีละ control */
+@theme {
+  --color-paper: #f3f5f6;
+  --color-surface: #ffffff;
+  --color-ink: #18222e;
+  --color-ink-soft: #5b6875;
+  --color-line: #d6dce1;
+  --color-signal: #f6c443;
+  --color-progress: #2d64d8;
+  --color-done: #2f8a5b;
+  --color-danger: #c2382f;
+  --color-on-signal: #18222e;
+}
+
+/* ✅ inline = อ้างถึงตัวแปรที่ next/font สร้างใน layout.tsx
+   --font-sans เป็นค่าตั้งต้นของทั้งหน้า จึงไม่ต้องใส่ class font ในทุก element */
+@theme inline {
+  --font-display: var(--font-chakra), system-ui, sans-serif;
+  --font-sans: var(--font-plex-looped), system-ui, sans-serif;
+}
+
+@layer base {
+  :root {
+    /* ✅ บอก browser ว่าหน้านี้สว่าง — scrollbar, dropdown, ปฏิทินจะเป็นสีสว่าง */
+    color-scheme: light;
+  }
+
+  /* 📌 โหมดมืด: เปลี่ยนแค่ค่า token — ทุก class ที่ใช้ token เปลี่ยนตามเอง */
+  .dark {
+    color-scheme: dark;
+    /* ✅ พื้นหลังเป็นกรมท่าเข้มต่อจาก ink ของโหมดสว่าง — แอปยังรู้สึกเป็นตัวเดิม */
+    --color-paper: #141c26;
+    --color-surface: #1c2531;
+    --color-ink: #e4e9ee;
+    --color-ink-soft: #9ba7b3;
+    --color-line: #2e3a49;
+    /* ✅ เหลืองคงเดิม — เป็นเอกลักษณ์ของแอป */
+    --color-signal: #f6c443;
+    /* ✅ สีความหมายสว่างขึ้นเล็กน้อย ให้ตัดกับพื้นมืดพอ */
+    --color-progress: #6f9bff;
+    --color-done: #4fb985;
+    --color-danger: #f0736a;
+  }
+  
+  body {
+    @apply bg-paper text-ink;
+    /* ⚠️ ภาษาไทยมีสระบน-ล่างและวรรณยุกต์ซ้อนกัน
+       line-height ต่ำกว่านี้ บรรทัดจะชนกัน */
+    line-height: 1.65;
+  }
+
+  /* ✅ กรอบ focus ชัด ๆ สำหรับคนที่ใช้คีย์บอร์ด — แสดงเฉพาะตอนกด Tab ไม่ใช่ตอนคลิก */
+  :focus-visible {
+    outline: 2px solid var(--color-progress);
+    outline-offset: 2px;
+  }
+}
+
+/* ✅ ผู้ใช้ที่ตั้งค่าเครื่องให้ลดการเคลื่อนไหว (เช่น คนที่เวียนหัวง่าย) — ปิด animation */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
