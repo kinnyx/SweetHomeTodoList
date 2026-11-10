@@ -78,7 +78,7 @@ export async function createProject(
 
     await setCurrentProjectCookie(projectId)
     revalidatePath('/', 'layout')
-    redirect(`/project/${projectId}`)
+    redirect(`/projects/${projectId}`)
 }
 
 export async function inviteMember(
@@ -206,4 +206,34 @@ export async function deleteProject(projectId: string): Promise<ActionResult> {
     await clearCurrentProjectIf(parsed.data)
     revalidatePath('/', 'layout')
     redirect('/projects')
+}
+
+export async function renameProject(
+    projectId: string,
+    _prev: ProjectFormState,
+    formData: FormData
+): Promise<ProjectFormState> {
+    const user = await requireUser()
+
+    const idCheck = ProjectIdSchema.safeParse(projectId)
+    if (!idCheck.success) return { error: BAD_INPUT }
+
+    const parsed = ProjectNameSchema.safeParse({ name: formData.get('name') })
+    if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? BAD_INPUT }
+
+    const role = await getProjectRole(user.id, idCheck.data)
+    if (!role) return { error: NOT_FOUND }
+    if (role !== 'OWNER') return { error: 'เฉพาะเจ้าของ project ที่เปลี่ยนชื่อได้' }
+
+    try {
+        await db.project.update({
+            where: { id: idCheck.data },
+            data: { name: parsed.data.name },
+        })
+    } catch {
+        return { error: 'บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง' }
+    }
+
+    revalidatePath('/', 'layout')
+    return { error: null, message: 'เปลี่ยนชื่อแล้ว' }
 }

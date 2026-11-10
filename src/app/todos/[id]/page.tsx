@@ -73,6 +73,8 @@ async function TodoDetail({ params }: { params: Params }) {
             priority: true,
             createdAt: true,
             updatedAt: true,
+            createdBy: { select: { name: true } },
+            project: { select: { name: true, isPersonal: true } },
         },
     })
 
@@ -82,6 +84,12 @@ async function TodoDetail({ params }: { params: Params }) {
         <>
             <h1 className="mt-4 font-display text-3xl font-semibold">{todo.title}</h1>
             <p className="mt-1 text-sm text-ink-soft">
+                {todo.project.name}
+                {!todo.project.isPersonal && (
+                    <>, สร้างโดย {todo.createdBy?.name ?? 'บัญชีที่ถูกลบแล้ว'}</>
+                )}
+            </p>
+            <p className="text-sm text-ink-soft">
                 สร้างเมื่อ { dateFormat.format(todo.createdAt) }
                 {todo.updatedAt.getTime() !== todo.createdAt.getTime() &&
                     `, แก้ไขล่าสุด ${dateFormat.format(todo.updatedAt)}`}

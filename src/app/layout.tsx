@@ -7,6 +7,7 @@ import { MainNav, MainNavFallback } from '@/components/main-nav'
 import { UserMenu } from '@/components/user-menu'
 import { ThemeProvider } from '@/components/theme-provider'
 import './globals.css'
+import { ProjectSwitcherSection } from '@/components/project-switcher-section'
 
 // ✅ next/font ดาวน์โหลด font มาเก็บในโปรเจกต์ตอน build
 //    ผู้ใช้ไม่ต้องโหลดจาก Google ตอนเปิดหน้า เร็วกว่าและไม่ส่งข้อมูลไป Google
@@ -42,6 +43,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               <Link href="/" className="py-3 font-display text-lg font-bold">
                 ใบงาน
               </Link>
+              <Suspense fallback={null}>
+                <ProjectSwitcherSection />
+              </Suspense>
               <nav aria-label="เมนูหลัก" className="flex gap-5">
                 <Suspense fallback={<MainNavFallback />}>
                   <MainNav />
