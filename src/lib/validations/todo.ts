@@ -26,4 +26,5 @@ export const UpdateTodoSchema = z.object({
         .transform((v) => v || null),
     status: StatusSchema,
     priority: z.enum(['LOW', 'MEDIUM', 'HIGH'], { error: 'เลือกระดับความสำคัญ' }),
+    assigneeId: z.string().max(50).nullish().transform((v) => v || null),
 })

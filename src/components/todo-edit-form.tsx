@@ -2,7 +2,7 @@
 
 import { useActionState } from "react"
 import { updateTodo, type UpdateTodoState } from "@/actions/todo.actions"
-import type { Priority , Status} from '@/types'
+import type { Priority , Status, UserSummary} from '@/types'
 import { PRIORITY_LABEL, PRIORITY_ORDER } from "@/lib/priority"
 import { StatusPicker } from "./status-picker"
 
@@ -12,11 +12,12 @@ type EditableTodo = {
     note: string | null
     status: Status
     priority: Priority
+    assigneeId: string | null
 }
 
 const initialState: UpdateTodoState = { error: null, saved: false }
 
-export function TodoEditForm({ todo }: { todo: EditableTodo }) {
+export function TodoEditForm({ todo, members }: { todo: EditableTodo; members: UserSummary[] }) {
     const updateThisTodo = updateTodo.bind(null, todo.id)
     const [state, formAction, isPending] = useActionState(updateThisTodo, initialState)
 
@@ -25,6 +26,7 @@ export function TodoEditForm({ todo }: { todo: EditableTodo }) {
         note: todo.note ?? '',
         status: todo.status,
         priority: todo.priority,
+        assigneeId: todo.assigneeId ?? '',
     }
 
     return (
@@ -55,6 +57,25 @@ export function TodoEditForm({ todo }: { todo: EditableTodo }) {
             </div>
 
             <StatusPicker defaultValue={v.status} />
+
+            {members.length > 0 && (
+                <div className="space-y-1">
+                    <label htmlFor="assigneeId" className="block text-sm font-medium">ผู้รับผิดชอบ</label>
+                    <select
+                        id="assigneeId"
+                        name="assigneeId"
+                        defaultValue={v.assigneeId}
+                        className="rounded-md border border-line bg-surface px-3 py-2"
+                    >
+                        <option value="">ยังไม่มอบหมาย</option>
+                        {members.map((m) => (
+                            <option key={m.id} value={m.id}>
+                                {m.name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+            )}
 
             <div className="space-y-1">
                 <label htmlFor="priority" className="block text-sm font-medium">ความสำคัญ</label>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getSession } from "@/lib/session";
 import { signOutAction } from "@/actions/auth.action";
+import { Avatar } from "./avatar";
 
 export async function UserMenu() {
     const session = await getSession()
@@ -15,8 +16,9 @@ export async function UserMenu() {
 
     return (
         <div className="flex items-center gap-3">
-            <Link href="/settings" className="text-ink-soft hover:text-ink">
-                ตั้งค่า
+            <Link href="/settings" className="flex items-center gap-2 text-ink-soft hover:text-ink">
+                <Avatar name={session.user.name} image = {session.user.image} size="sm" decorative />
+                <span>{session.user.name}</span>
             </Link>
 
             <form action={signOutAction}>

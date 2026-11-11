@@ -5,6 +5,7 @@ import { requireUser } from "@/lib/session";
 import type { Status } from "@/types";
 import { ProfileForm } from "@/components/profile-form";
 import { ThemeSwitcher } from "@/components/theme-switcher";
+import { AvatarForm } from "@/components/avatar-form";
 import { accessibleTodos } from "@/lib/access";
 
 const STATUS_LABEL: Record<Status, string> = {
@@ -48,7 +49,12 @@ export default function SettingPage() {
 async function ProfileSection() {
     await connection()
     const user = await requireUser()
-    return <ProfileForm key={user.name} name={user.name} email={user.email} />
+    return (
+        <>
+            <AvatarForm key={user.image ?? 'none'} name={user.name} image={user.image ?? null} />
+            <ProfileForm key={user.name} name={user.name} email={user.email} />
+        </>
+    )
 }
 
 async function SummarySection() {

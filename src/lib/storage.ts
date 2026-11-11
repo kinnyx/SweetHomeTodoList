@@ -2,6 +2,8 @@ import 'server-only'
 import { createClient } from '@supabase/supabase-js'
 import type { AllowedImageType } from './attachments'
 
+export const AVATAR_BUCKET = 'avatars'
+export const MAX_AVATAR_SIZE = 2 * 1024 * 1024
 export const ATTACHMENT_BUCKET = 'attachments'
 
 const url = process.env.SUPABASE_URL
@@ -29,4 +31,15 @@ export function detectImageType(bytes: Uint8Array): AllowedImageType | null {
     if (ascii(0, 4) === 'RIFF' && ascii(8, 12) === 'WEBP') return 'image/webp'
 
     return null
+}
+
+export function avatarPublicUrl(path: string) {
+    return storage.from(AVATAR_BUCKET).getPublicUrl(path).data.publicUrl
+}
+
+export function avatarPathFromUrl(url: string | null | undefined): string | null {
+    if (!url) return null
+    const marker = `/storage/v1/object/public/${AVATAR_BUCKET}/`
+    const index = url.indexOf(marker)
+    return index === -1 ? null : url.slice(index + marker.length)
 }

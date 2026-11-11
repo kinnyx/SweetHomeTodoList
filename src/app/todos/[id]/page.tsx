@@ -12,6 +12,7 @@ import { DuplicateTodoButton } from "@/components/duplicate-todo-button";
 import { AttachmentList } from "@/components/attachment-list";
 import { AttachmentUploadForm } from "@/components/attachment-upload-form";
 import { accessibleTodos } from "@/lib/access";
+import { userSummarySelect } from "@/lib/todo-select";
 
 type Params = Promise<{ id: string }>
 type SearchParams = Promise<Record<string, string | string[] | undefined>>
@@ -22,12 +23,12 @@ const dateFormat = new Intl.DateTimeFormat('th-TH', {
     timeZone: 'Asia/Bangkok',
 })
 
-export default function TodoDetailPage({ 
+export default function TodoDetailPage({
     params,
-    searchParams, 
-}: { 
+    searchParams,
+}: {
     params: Params
-    searchParams: SearchParams 
+    searchParams: SearchParams
 }) {
     return (
         <main className="mx-auto max-w-2xl px-6 py-12">
@@ -73,12 +74,24 @@ async function TodoDetail({ params }: { params: Params }) {
             priority: true,
             createdAt: true,
             updatedAt: true,
+            projectId: true,
+            assigneeId: true,
             createdBy: { select: { name: true } },
             project: { select: { name: true, isPersonal: true } },
         },
     })
 
     if (!todo) notFound()
+
+    const members = todo.project.isPersonal
+        ? []
+        : (
+            await db.projectMember.findMany({
+                where: { projectId: todo.projectId },
+                select: { user: { select: userSummarySelect } },
+                orderBy: [{ role: 'asc' }, { joinedAt: 'asc' }],
+            })
+        ).map((m) => m.user)
 
     return (
         <>
@@ -90,7 +103,7 @@ async function TodoDetail({ params }: { params: Params }) {
                 )}
             </p>
             <p className="text-sm text-ink-soft">
-                สร้างเมื่อ { dateFormat.format(todo.createdAt) }
+                สร้างเมื่อ {dateFormat.format(todo.createdAt)}
                 {todo.updatedAt.getTime() !== todo.createdAt.getTime() &&
                     `, แก้ไขล่าสุด ${dateFormat.format(todo.updatedAt)}`}
             </p>
@@ -99,7 +112,7 @@ async function TodoDetail({ params }: { params: Params }) {
                 <DuplicateTodoButton id={todo.id} />
             </div>
 
-            <TodoEditForm 
+            <TodoEditForm
                 key={todo.updatedAt.toISOString()}
                 todo={{
                     id: todo.id,
@@ -107,7 +120,9 @@ async function TodoDetail({ params }: { params: Params }) {
                     note: todo.note,
                     status: todo.status,
                     priority: todo.priority,
+                    assigneeId: todo.assigneeId,
                 }}
+                members={members}
             />
 
             <section aria-labelledby="attachments-heading" className="mt-12 border-t border-line pt-6">

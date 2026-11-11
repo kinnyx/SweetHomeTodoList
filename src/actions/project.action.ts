@@ -17,7 +17,7 @@ const NOT_FOUND = 'ไม่พบ Project นี้'
 const BAD_INPUT = 'ข้อมูลไม่ถูกต้อง'
 
 async function setCurrentProjectCookie(projectId: string) {
-    ;(await cookies()).set(CURRENT_PROJECT_COOKIE, projectId, {
+    ; (await cookies()).set(CURRENT_PROJECT_COOKIE, projectId, {
         httpOnly: true,
         sameSite: 'lax',
         secure: process.env.NODE_ENV === 'production',
@@ -140,10 +140,19 @@ export async function removeMember(projectId: string, memberUserId: string): Pro
         return { ok: false, error: 'เจ้าของออกจาก project ไม่ได้ — ลบ project แทน' }
     }
 
-    const { count } = await db.projectMember.deleteMany({
-        where: { projectId: idCheck.data, userId: memberCheck.data, role: 'MEMBER' },
-    })
-    if (count === 0) return { ok: false, error: 'ไม่พบสมาชิกคนนี้ อาจถูกลบไปแล้ว' }
+    // ✅ $transaction([...]) = ทั้งสองคำสั่งสำเร็จพร้อมกัน หรือไม่สำเร็จเลย
+    //    เหมือน BEGIN TRAN ... COMMIT ใน SQL Server
+    //    ถ้าปลดงานสำเร็จแต่ลบสมาชิกพัง (หรือกลับกัน) ข้อมูลจะไม่ค้างครึ่งทาง
+    const [, removed] = await db.$transaction([
+        db.todo.updateMany({
+            where: { projectId: idCheck.data, assigneeId: memberCheck.data },
+            data: { assigneeId: null },
+        }),
+        db.projectMember.deleteMany({
+            where: { projectId: idCheck.data, userId: memberCheck.data, role: 'MEMBER' },
+        }),
+    ])
+    if (removed.count === 0) return { ok: false, error: 'ไม่พบสมาชิกคนนี้ อาจถูกลบไปแล้ว' }
 
     revalidatePath(`/projects/${idCheck.data}`)
     return { ok: true }
@@ -160,9 +169,15 @@ export async function leaveProject(projectId: string): Promise<ActionResult> {
     if (role === 'OWNER') return { ok: false, error: 'เจ้าของออกจาก project ไม่ได้ — ลบ project แทน' }
 
     try {
-        await db.projectMember.delete({
-            where: { projectId_userId: { projectId: parsed.data, userId: user.id } },
-        })
+        await db.$transaction([
+            db.todo.updateMany({
+                where: { projectId: parsed.data, assigneeId: user.id },
+                data: { assigneeId: null },
+            }),
+            db.projectMember.delete({
+                where: { projectId_userId: { projectId: parsed.data, userId: user.id } },
+            }),
+        ])
     } catch {
         return { ok: false, error: 'ออกจาก project ไม่สำเร็จ ลองใหม่อีกครั้ง' }
     }

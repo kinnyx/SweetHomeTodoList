@@ -9,13 +9,17 @@ import { connection } from "next/server";
 import { requireUser } from "@/lib/session";
 import { accessibleTodos } from "@/lib/access";
 import { getCurrentProject } from "@/lib/current-project";
+import { ProjectHeading, ProjectHeadingSkeleton } from '@/components/project-heading'
+import { userSummarySelect } from "@/lib/todo-select";
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>
 
 export default function TablePage({ searchParams }: { searchParams: SearchParams }) {
     return (
         <main className="mx-auto max-w-4xl px-6 py-12">
-            <h1 className="text-3xl font-bold">ตารางงาน</h1>
+            <Suspense fallback={<ProjectHeadingSkeleton />}>
+                <ProjectHeading subtitle="ค้นหา เรียง และกรองงานทั้งหมด" />
+            </Suspense>
             
             <Suspense fallback={<TableSkeleton />}>
                 <TableSection searchParams={searchParams} />
@@ -37,7 +41,7 @@ async function TableSection({ searchParams }: { searchParams: SearchParams }) {
             orderBy: buildOrderBy(query),
             skip: (query.page - 1) * query.size,
             take: query.size,
-            select: { id: true, title: true, note: true, status: true, priority: true, createdAt: true, updatedAt: true },
+            select: { id: true, title: true, note: true, status: true, priority: true, createdAt: true, updatedAt: true, assignee: { select: userSummarySelect }, },
         }),
         db.todo.count({ where }),
     ])

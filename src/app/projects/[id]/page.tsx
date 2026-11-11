@@ -13,6 +13,7 @@ import {
 } from "@/actions/project.action";
 import { ActionButton } from "@/components/action-button";
 import { InviteMemberForm, RenameProjectForm } from "@/components/project-forms";
+import { Avatar } from "@/components/avatar";
 
 type Params = Promise<{ id: string }>
 
@@ -49,7 +50,7 @@ async function ProjectDetail({ params }: { params: Params }) {
                     name: true,
                     isPersonal: true,
                     members: {
-                        select: { role: true, user: { select: { id: true, name: true, email: true } } },
+                        select: { role: true, user: { select: { id: true, name: true, email: true, image: true } } },
                         orderBy: [{ role: 'asc' }, { joinedAt: 'asc' }]
                     },
                 },
@@ -95,6 +96,7 @@ async function ProjectDetail({ params }: { params: Params }) {
                 <ul className="mt-4 divide-y divide-line overflow-hidden rounded-lg border border-line bg-surface">
                     {project.members.map((m) => (
                         <li key={m.user.id} className="flex items-center gap-3 px-4 py-3">
+                            <Avatar name={m.user.name} image={m.user.image} decorative />
                             <div className="min-w-0 flex-1">
                                 <p className="font-medium">
                                     {m.user.name}

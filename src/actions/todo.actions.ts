@@ -7,7 +7,7 @@ import { db } from "@/lib/db"
 import { requireUser } from "@/lib/session"
 import { WIP_LIMIT } from "@/lib/kanban"
 import { ATTACHMENT_BUCKET, storage } from "@/lib/storage"
-import { accessibleTodos, findAccessibleTodo } from "@/lib/access"
+import { accessibleTodos, findAccessibleTodo, getProjectRole } from "@/lib/access"
 import {
     CreateTodoSchema,
     StatusSchema,
@@ -20,7 +20,13 @@ import { getCurrentProject } from "@/lib/current-project"
 
 export type ActionResult = { ok: true } | { ok: false; error: string }
 export type CreateTodoState = { error: string | null }
-export type TodoFormValues = { title: string; note: string; status: string; priority: string }
+export type TodoFormValues = { 
+    title: string
+    note: string
+    status: string
+    priority: string 
+    assigneeId: string
+}
 export type UpdateTodoState = {
     error: string | null
     saved: boolean
@@ -109,6 +115,7 @@ export async function updateTodo(
         note: String(formData.get('note') ?? ''),
         status: String(formData.get('status') ?? ''),
         priority: String(formData.get('priority') ?? ''),
+        assigneeId: String(formData.get('assigneeId') ?? ''),
     }
 
     const idCheck = TodoIdSchema.safeParse(id)
@@ -122,6 +129,13 @@ export async function updateTodo(
     try {
         const todo = await findAccessibleTodo(user.id, idCheck.data)
         if (!todo) return { error: NOT_FOUND, saved: false, values }
+
+        if (parsed.data.assigneeId) {
+            const assigneeRole = await getProjectRole(parsed.data.assigneeId, todo.projectId)
+            if (!assigneeRole) {
+                return { error: 'ผู้รับผิดชอบต้องเป็นสมาชิกของ project นี้', saved: false, values }
+            }
+        }
 
         if (parsed.data.status === 'IN_PROGRESS') {
             const wipError = await checkWipLimit(todo.projectId, todo.id)

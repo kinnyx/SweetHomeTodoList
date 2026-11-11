@@ -1,9 +1,10 @@
 import Link from "next/link";
-import type { Priority, Status } from "@/types";
+import type { Priority, Status, UserSummary } from "@/types";
 import { PriorityTag } from "./priority-tag";
 import { buildTableHref, type TableQuery } from "@/lib/table-query";
 import { todoHref } from "@/lib/back-link";
 import { DoneToggle } from "./done-toggle";
+import { Avatar } from "./avatar";
 
 export type TodoRow = {
     id: number
@@ -11,6 +12,7 @@ export type TodoRow = {
     note: string | null
     status: Status
     priority: Priority
+    assignee: UserSummary | null
     createdAt: Date
     updatedAt: Date
 }
@@ -23,7 +25,7 @@ const dateFormat = new Intl.DateTimeFormat('th-TH', {
 
 export function TodoTable({ rows, query }: { rows: TodoRow[]; query: TableQuery }) {
     if (rows.length === 0) {
-        return <p className="mt-6 text-ink-soft">ไม่พบงานที่ตรงกับเงือนไข</p>
+        return <p className="mt-6 text-ink-soft">ไม่พบงานที่ตรงกับเงื่อนไข</p>
     }
 
     return (
@@ -33,6 +35,7 @@ export function TodoTable({ rows, query }: { rows: TodoRow[]; query: TableQuery 
                     <tr>
                         <th scope="col" className="w-16 px-4 py-3 font-medium">สถานะ</th>
                         <SortHeader label="ชื่องาน" column="title" query={query} />
+                        <th scope="col" className="px-4 py-3 font-medium">ผู้รับผิดชอบ</th>
                         <SortHeader label="ความสำคัญ" column="priority" query={query} />
                         <SortHeader label="สร้างเมื่อ" column="createdAt" query={query} />
                         <SortHeader label="แก้ไขล่าสุด" column="updatedAt" query={query} />
@@ -42,13 +45,27 @@ export function TodoTable({ rows, query }: { rows: TodoRow[]; query: TableQuery 
                     {rows.map((row) => (
                         <tr key={row.id} className="hover:bg-paper">
                             <td className="px-4 py-3">
+                                <DoneToggle id={row.id} done={row.status === 'DONE'} title={row.title} />
+                            </td>
+                            <td className="px-4 py-3">
                                 <Link
                                     href={todoHref(row.id, 'table')}
                                     className={row.status === 'DONE' ? 'text-ink-soft line-through' : 'hover:underline'}
                                 >
                                     {row.title}
                                 </Link>
-                                {row.note && <p className="line-clamp1 text-xs text-ink-soft">{row.note}</p>}
+                                {row.note && <p className="line-clamp-1 text-xs text-ink-soft">{row.note}</p>}
+                            </td>
+                            <td className="px-4 py-3">
+                                {row.assignee ? (
+                                    <span className="flex items-center gap-2 whitespace-nowrap">
+                                        {/* ✅ ในตารางมีที่พอ แสดงทั้งรูปและชื่อ — รูปจึงเป็น decorative */}
+                                        <Avatar name={row.assignee.name} image={row.assignee.image} size="sm" decorative />
+                                        {row.assignee.name}
+                                    </span>
+                                ) : (
+                                    <span className="text-ink-soft">—</span>
+                                )}
                             </td>
                             <td className="px-4 py-3">
                                 <PriorityTag priority={row.priority} />
@@ -86,11 +103,11 @@ function SortHeader({
             className="px-4 py-3 font-medium"
         >
             <Link
-                href={buildTableHref(query, { sort: column, order: nextOrder, page:1 })}
+                href={buildTableHref(query, { sort: column, order: nextOrder, page: 1 })}
                 className="inline-flex items-center gap-1 hover:text-ink"
             >
                 {label}
-                <span>
+                <span aria-hidden="true" className={isActive ? '' : 'text-ink-soft/40'}>
                     {isActive ? (query.order === 'asc' ? '▲' : '▼') : '↕'}
                 </span>
             </Link>

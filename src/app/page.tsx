@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { Suspense } from 'react'
 import { connection } from 'next/server'
 import { db } from '@/lib/db'
@@ -6,11 +7,14 @@ import { AddTodoForm } from '@/components/add-todo-form'
 import { requireUser } from '@/lib/session'
 import { accessibleTodos } from '@/lib/access'
 import { getCurrentProject } from '@/lib/current-project'
+import { AvatarStack } from '@/components/avatar-stack'
+import { ProjectHeading, ProjectHeadingSkeleton } from '@/components/project-heading'
+import { todoSelect } from '@/lib/todo-select'
 
 export default function HomePage() {
   return (
     <main className="mx-auto max-w-xl px-6 py-12">
-      <Suspense fallback={<div className="h-10 w-48 animate-pulse rounded bg-paper" />}>
+      <Suspense fallback={<ProjectHeadingSkeleton />}>
         <ProjectHeading />
       </Suspense>
 
@@ -23,13 +27,6 @@ export default function HomePage() {
   );
 }
 
-async function ProjectHeading() {
-  await connection()
-  const user = await requireUser()
-  const project = await getCurrentProject(user.id)
-  return <h1 className='font-display text-3xl font-semibold'>{project.name}</h1>
-}
-
 async function TodosSection() {
   await connection()
   const user = await requireUser()
@@ -37,7 +34,7 @@ async function TodosSection() {
 
   const todos = await db.todo.findMany({
     where: { ...accessibleTodos(user.id), projectId: project.id },
-    select: { id: true, title: true, status: true, priority: true, note: true },
+    select: todoSelect,
     orderBy: [{ priority: 'desc' },{ createdAt: 'asc' }],
   })
 

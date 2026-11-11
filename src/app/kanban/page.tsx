@@ -5,12 +5,15 @@ import { KanbanBoard } from "@/components/kanban/kanban-board";
 import { requireUser } from "@/lib/session";
 import { accessibleTodos } from "@/lib/access";
 import { getCurrentProject } from "@/lib/current-project";
+import { ProjectHeading, ProjectHeadingSkeleton } from '@/components/project-heading'
+import { todoSelect } from "@/lib/todo-select";
 
 export default function KanbanPage() {
     return (
         <main className="mx-auto max-w-5xl px-6 py-12">
-            <h1 className="text-3xl font-bold">บอร์ดงาน</h1>
-            <p className="mt-1 text-ink-soft">ลากการ์ดไปคอลัมน์อื่นเพื่อเปลี่ยนสถานะ</p>
+            <Suspense fallback={<ProjectHeadingSkeleton />}>
+                <ProjectHeading subtitle="ลากการ์ดไปคอลัมน์อื่นเพื่อเปลี่ยนสถานะ" />
+            </Suspense>
 
             <Suspense fallback={<BoardSkeleton />}>
                 <BoardSection />
@@ -26,7 +29,7 @@ async function BoardSection() {
 
     const todos = await db.todo.findMany({
         where: { ...accessibleTodos(user.id), projectId: project.id },
-        select: { id: true, title: true, note: true, status: true, priority: true },
+        select: todoSelect,
         orderBy: [{ priority: 'desc' }, { createdAt: 'asc' }],
     })
 

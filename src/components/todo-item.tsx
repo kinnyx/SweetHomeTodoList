@@ -3,6 +3,7 @@ import type { Todo } from '@/types'
 import { todoHref } from '@/lib/back-link'
 import { PriorityTag } from '@/components/priority-tag'
 import { StatusMark } from '@/components/status-mark'
+import { AssigneeBadge } from './assignee-badge'
 
 type TodoItemProps = {
   todo: Todo
@@ -33,6 +34,7 @@ export function TodoItem({ todo, onToggle, onDelete }: TodoItemProps) {
         {todo.note && <p className="line-clamp-1 text-sm text-ink-soft">{todo.note}</p>}
       </Link>
 
+      <AssigneeBadge assignee={todo.assignee} />
       <PriorityTag priority={todo.priority} />
 
       <button

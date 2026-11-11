@@ -6,6 +6,7 @@ import type { Todo } from "@/types"
 import Link from "next/link"
 import { PriorityTag } from "@/components/priority-tag"
 import { todoHref } from '@/lib/back-link'
+import { AssigneeBadge } from "@/components/assignee-badge"
 
 export function KanbanCard({ todo }: { todo: Todo }) {
     const { setNodeRef, listeners, attributes, transform, isDragging } = useDraggable({
@@ -29,8 +30,9 @@ export function KanbanCard({ todo }: { todo: Todo }) {
                 {todo.title}
             </Link>
             {todo.note && <p className="mt-1 line-clamp-2 text-xs text-ink-soft">{todo.note}</p>}
-            <div className="mt-2">
+            <div className="mt-2 flex items-center justify-between">
                 <PriorityTag priority={todo.priority} />
+                <AssigneeBadge assignee={todo.assignee} />
             </div>
         </li>
     )
