@@ -1,0 +1,6 @@
+-- CreateEnum
+CREATE TYPE "OfficeRoom" AS ENUM ('MANAGER', 'WORK', 'MEETING', 'LOUNGE');
+
+-- AlterTable
+ALTER TABLE "ProjectMember" ADD COLUMN     "room" "OfficeRoom" NOT NULL DEFAULT 'LOUNGE',
+ADD COLUMN     "roomAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;

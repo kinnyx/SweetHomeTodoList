@@ -29,15 +29,23 @@ enum ProjectRole {
   MEMBER
 }
 
-model Project {
-  id          String        @id @default(cuid())
-  name        String        @db.VarChar(100)
-  isPersonal  Boolean       @default(false)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+enum OfficeRoom {
+  MANAGER
+  WORK
+  MEETING
+  LOUNGE
+}
 
-  members     ProjectMember[]
-  todos       Todo[]
+model Project {
+  id              String        @id @default(cuid())
+  name            String        @db.VarChar(100)
+  isPersonal      Boolean       @default(false)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  members         ProjectMember[]
+  todos           Todo[]
+  messages        MeetingMessage[]
 }
 
 model ProjectMember {
@@ -46,6 +54,8 @@ model ProjectMember {
   userId      String
   user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   role        ProjectRole   @default(MEMBER)
+  room        OfficeRoom    @default(LOUNGE)
+  roomAt      DateTime      @default(now())
   joinedAt    DateTime      @default(now())
 
   @@id([projectId, userId])
@@ -90,6 +100,7 @@ model User {
   assignedTodos   Todo[]    @relation("TodoAssignee")
   createdTodos    Todo[]    @relation("TodoCreatedBy")
   attachments     Attachment[]
+  meetingMessages MeetingMessage[] @relation("MeetingMessageAuthor")
 
 
   @@unique([email])
@@ -159,4 +170,16 @@ model Attachment {
   createdAt     DateTime  @default(now())
 
   @@index([todoId])
+}
+
+model MeetingMessage {
+  id            String    @id @default(cuid())
+  projectId     String
+  project       Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  authorId      String?
+  author        User?     @relation("MeetingMessageAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  body          String    @db.VarChar(1000)
+  createdAt     DateTime  @default(now())
+
+  @@index([projectId, createdAt])
 }

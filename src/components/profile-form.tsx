@@ -1,7 +1,7 @@
 'use client'
 
 import { useActionState } from "react"
-import { updateProfileAction, type ProfileFormState } from "@/actions/auth.action"
+import { updateProfileAction, type ProfileFormState } from "@/actions/auth.actions"
 
 const initialState: ProfileFormState = { error: null, saved: false }
 

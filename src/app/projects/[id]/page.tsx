@@ -10,7 +10,7 @@ import {
     leaveProject, 
     openProject, 
     removeMember, 
-} from "@/actions/project.action";
+} from "@/actions/project.actions";
 import { ActionButton } from "@/components/action-button";
 import { InviteMemberForm, RenameProjectForm } from "@/components/project-forms";
 import { Avatar } from "@/components/avatar";

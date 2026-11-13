@@ -1,7 +1,7 @@
 'use client'
 
 import { useTransition } from "react"
-import { deleteAttachment } from "@/actions/attachment.action"
+import { deleteAttachment } from "@/actions/attachment.actions"
 
 export function DeleteAttachmentButton({ id, fileName }: { id: string; fileName: string }) {
     const [isPending, startTransition] = useTransition()

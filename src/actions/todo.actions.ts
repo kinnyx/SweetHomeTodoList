@@ -20,11 +20,11 @@ import { getCurrentProject } from "@/lib/current-project"
 
 export type ActionResult = { ok: true } | { ok: false; error: string }
 export type CreateTodoState = { error: string | null }
-export type TodoFormValues = { 
+export type TodoFormValues = {
     title: string
     note: string
     status: string
-    priority: string 
+    priority: string
     assigneeId: string
 }
 export type UpdateTodoState = {
@@ -82,6 +82,8 @@ export async function setTodoStatus(id: number, status: Status): Promise<ActionR
     const parsed = z.object({ id: TodoIdSchema, status: StatusSchema }).safeParse({ id, status })
     if (!parsed.success) return { ok: false, error: 'ข้อมูลไม่ถูกต้อง' }
 
+
+
     try {
         const todo = await findAccessibleTodo(user.id, parsed.data.id)
         if (!todo) return { ok: false, error: NOT_FOUND }
@@ -91,10 +93,23 @@ export async function setTodoStatus(id: number, status: Status): Promise<ActionR
             if (wipError) return { ok: false, error: wipError }
         }
 
-        await db.todo.update({
-            where: { id: todo.id },
-            data: { status: parsed.data.status }
-        })
+        const startsWork = parsed.data.status === 'IN_PROGRESS'
+        const isMine = todo?.assigneeId === null || todo?.assigneeId === user.id
+
+        await db.$transaction([
+            db.todo.update({
+                where: { id: todo.id },
+                data: { status: parsed.data.status }
+            }),
+            ...(startsWork && isMine
+                ? [
+                    db.projectMember.update({
+                        where: { projectId_userId: { projectId: todo.projectId, userId: user.id } },
+                        data: { room: 'WORK', roomAt: new Date() },
+                    }),
+                ]
+                : []),
+        ])
     } catch {
         return { ok: false, error: NOT_FOUND }
     }

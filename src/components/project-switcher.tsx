@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { switchProject } from '@/actions/project.action'
+import { switchProject } from '@/actions/project.actions'
 
 type Props = {
     projects: { id: string; name: string }[]

@@ -4,6 +4,8 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 
 const ITEMS = [
+    { href: '/my-tasks', label: 'งานของฉัน' },
+    { href: '/office', label: 'ออฟฟิศ' },
     { href: '/', label: 'รายการ' },
     { href: '/table', label: 'ตาราง' },
     { href: '/kanban', label: 'บอร์ด' },

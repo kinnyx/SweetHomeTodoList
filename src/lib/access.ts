@@ -9,7 +9,7 @@ export function accessibleTodos(userId: string): Prisma.TodoWhereInput {
 export async function findAccessibleTodo(userId: string, todoId: number) {
     return db.todo.findFirst({
         where: { id: todoId, ...accessibleTodos(userId) },
-        select: { id: true, projectId: true },
+        select: { id: true, projectId: true, assigneeId: true },
     })
 }
 

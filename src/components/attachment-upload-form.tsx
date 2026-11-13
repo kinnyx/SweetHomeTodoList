@@ -1,7 +1,7 @@
 'use client'
 
 import { useActionState, useEffect, useRef, useState, type ChangeEvent } from "react"
-import { uploadAttachment, type UploadState } from "@/actions/attachment.action"
+import { uploadAttachment, type UploadState } from "@/actions/attachment.actions"
 import { ALLOWED_IMAGE_TYPES, MAX_FILE_SIZE, formatFileSize } from "@/lib/attachments"
 import { url } from "inspector/promises"
 

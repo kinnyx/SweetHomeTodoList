@@ -61,6 +61,7 @@ function buildWhere(query: TableQuery, userId: string, projectId: string): Prism
     return {
         ...accessibleTodos(userId),
         projectId,
+        ...(query.mine === '1' && { assigneeId: userId }),
         ...(query.q && { title: { contains: query.q, mode: 'insensitive' } }),
         ...(query.status !== 'all' && { status: query.status }),
         ...(query.priority !== 'ALL' && { priority: query.priority }),
@@ -94,6 +95,16 @@ function FilterForm({ query }: { query: TableQuery }) {
             action="/table"
             className="mt-6 flex flex-wrap items-center gap-2"
         >
+            <label className="flex items-center gap-2 text-sm">
+                <input 
+                    type="checkbox" 
+                    name="mine"
+                    value="1"
+                    defaultChecked={query.mine === '1'}
+                    className="size-4 accent-ink"
+                />
+                เฉพาะงานของฉัน
+            </label>
             <input 
                 type="search" 
                 name="q"

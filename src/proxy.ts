@@ -13,5 +13,5 @@ export function proxy(request: NextRequest) {
 
 export const config = {
     // ✅ :path* = ทุก URL ที่ขึ้นต้นด้วย /todos/
-    matcher: ['/', '/table', '/kanban', '/settings', '/todos/:path*', '/projects', '/projects/:path*'],
+    matcher: ['/', '/table', '/kanban', '/settings', '/todos/:path*', '/projects', '/projects/:path*', '/my-tasks', '/office'],
 }

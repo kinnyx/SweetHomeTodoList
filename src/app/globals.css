@@ -72,3 +72,13 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ✅ ใช้ token เดิม — โหมดมืดเปลี่ยนตามเอง
+   color-mix = ผสมสีเส้นกับความโปร่ง 50% ให้ลายกระเบื้องจาง ๆ ไม่แย่งสายตา */
+.office-floor {
+  background-color: var(--color-surface);
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--color-line) 50%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--color-line) 50%, transparent) 1px, transparent 1px);
+  background-size: 24px 24px;
+}

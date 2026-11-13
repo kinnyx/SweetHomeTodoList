@@ -6,7 +6,7 @@ import {
     inviteMember,
     renameProject,
     type ProjectFormState, 
-} from "@/actions/project.action"
+} from "@/actions/project.actions"
 
 const initialState: ProjectFormState = { error: null }
 const inputClass = 'min-w-0 flex-1 rounded-md border border-line bg-surface px-3 py-2'

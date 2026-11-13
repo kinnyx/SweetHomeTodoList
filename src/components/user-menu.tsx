@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getSession } from "@/lib/session";
-import { signOutAction } from "@/actions/auth.action";
+import { signOutAction } from "@/actions/auth.actions";
 import { Avatar } from "./avatar";
 
 export async function UserMenu() {

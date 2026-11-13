@@ -10,6 +10,7 @@ export const TableQuerySchema = z.object({
     order: z.enum(['asc', 'desc']).catch('desc'),
     page: z.coerce.number().int().min(1).catch(1),
     size: z.coerce.number().int().refine((n) => PAGE_SIZE_OPTIONS.includes(n)).catch(10),
+    mine: z.enum(['0', '1']).catch('0'),
 })
 
 export type TableQuery = z.infer<typeof TableQuerySchema>
@@ -22,6 +23,7 @@ const DEFAULTS: TableQuery = {
     order: 'desc',
     page: 1,
     size: 10,
+    mine: '0',
 }
 
 export function parseTableQuery(raw: Record<string, string | string[] | undefined>): TableQuery {

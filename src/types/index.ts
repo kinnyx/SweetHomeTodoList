@@ -15,3 +15,14 @@ export type Todo = {
     priority: Priority
     assignee: UserSummary | null
 }
+
+export type ChatMessage = {
+    id: string
+    body: string
+    createdAt: string
+    author: UserSummary | null
+}
+
+export type ProjectEvent = 
+    | { type: 'chat'; message: ChatMessage }
+    | { type: 'move' }
