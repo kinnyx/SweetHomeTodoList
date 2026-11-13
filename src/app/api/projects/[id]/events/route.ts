@@ -31,6 +31,21 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
             }
 
             const unsubscribe = await subscribProject(parsed.data, (event: ProjectEvent) => {
+                if (event.type === 'kicked') {
+                    if (event.userId === session.user.id) {
+                        send(`event: kicked\ndata: ${JSON.stringify(event)}\n\n`)
+                        cleanup()
+                        try {
+                            controller.close()
+                        } catch {}
+                        return
+                    }
+                    // ✅ คนอื่นถูกนำออก → สำหรับเรามันคือ "รายชื่อคนในออฟฟิศเปลี่ยน"
+                    //    ส่งเป็น move ให้แผนที่ดึงข้อมูลใหม่ ตัวละครคนนั้นจะหายไป
+                    //    และไม่ต้องส่ง userId ของคนอื่นลงไปที่ browser โดยไม่จำเป็น
+                    send(`event: move\ndata: ${JSON.stringify({ type: 'move' })}\n\n`)
+                    return
+                }
                 send(`event: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`)
             })
 

@@ -20,6 +20,11 @@ export function ProjectEventsProvider({ projectId, children }: { projectId: stri
         }
         source.addEventListener('chat', forward)
         source.addEventListener('move', forward)
+        source.addEventListener('kicked', (e) => {
+            // ปิดฝั่งเราด้วย ไม่ให้ EventSource พยายามต่อใหม่เอง
+            source.close()
+            forward(e as MessageEvent<string>)
+        })
         return () => source.close()
     }, [projectId])
 

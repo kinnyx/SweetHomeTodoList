@@ -10,6 +10,7 @@ import { CURRENT_PROJECT_COOKIE } from "@/lib/current-project"
 import { ATTACHMENT_BUCKET, storage } from "@/lib/storage"
 import { InviteSchema, ProjectIdSchema, ProjectNameSchema } from "@/lib/validations/project"
 import type { ActionResult } from "./todo.actions"
+import { publishProjectEvent } from "@/lib/realtime"
 
 export type ProjectFormState = { error: string | null; message?: string }
 
@@ -154,6 +155,8 @@ export async function removeMember(projectId: string, memberUserId: string): Pro
     ])
     if (removed.count === 0) return { ok: false, error: 'ไม่พบสมาชิกคนนี้ อาจถูกลบไปแล้ว' }
 
+    await publishProjectEvent(idCheck.data, { type: 'kicked', userId: memberCheck.data })
+
     revalidatePath(`/projects/${idCheck.data}`)
     return { ok: true }
 }
@@ -182,6 +185,7 @@ export async function leaveProject(projectId: string): Promise<ActionResult> {
         return { ok: false, error: 'ออกจาก project ไม่สำเร็จ ลองใหม่อีกครั้ง' }
     }
 
+    await publishProjectEvent(parsed.data, { type: 'kicked', userId: user.id })
     await clearCurrentProjectIf(parsed.data)
     revalidatePath('/', 'layout')
     redirect('/projects')

@@ -26,3 +26,4 @@ export type ChatMessage = {
 export type ProjectEvent = 
     | { type: 'chat'; message: ChatMessage }
     | { type: 'move' }
+    | { type: 'kicked'; userId: string }

@@ -23,13 +23,20 @@ type Props = {
 function MoveListener() {
     const router = useRouter()
     useProjectEvent((event) => {
-        if (event.type === 'move') router.refresh()
+        if (event.type === 'move' || event.type === 'kicked') router.refresh()
+    })
+    return null
+}
+
+function ChatBadgeListener({ counting, onNew }: { counting: boolean; onNew: () => void }) {
+    useProjectEvent((event) => {
+        if (event.type === 'chat' && counting) onNew()
     })
     return null
 }
 
 export function OfficeMap({ projectId, meId, isOwner, members, panels }: Props) {
-    const [error, setError] = useState<string | null>(null)
+    const [error, setError] = useState<string | null>(null)    
 
     const [optimisticMembers, moveOptimistic] = useOptimistic(
         members,
@@ -37,6 +44,8 @@ export function OfficeMap({ projectId, meId, isOwner, members, panels }: Props) 
             state.map((m) => (m.id === meId ? { ...m, room } : m))
     )
     const me = optimisticMembers.find((m) => m.id === meId)
+    const [unread, setUnread] = useState(0)
+    const inMeeting = me?.room === 'MEETING'
 
     // ให้ที่นั่งตามลำดับคนในแต่ละห้อง (เรียงตามวันที่เข้าทีมจาก server)
     const counters: Record<RoomKey, number> = { MANAGER: 0, WORK: 0, MEETING: 0, LOUNGE: 0 }
@@ -49,6 +58,7 @@ export function OfficeMap({ projectId, meId, isOwner, members, panels }: Props) 
             return
         }
         setError(null)
+        if (room === 'MEETING') setUnread(0)
         startTransition(async () => {
             moveOptimistic(room)
             const result = await moveToRoom(room)
@@ -59,6 +69,7 @@ export function OfficeMap({ projectId, meId, isOwner, members, panels }: Props) 
     return (
         <ProjectEventsProvider projectId={projectId}>
             <MoveListener />
+            <ChatBadgeListener counting={!inMeeting} onNew={() => setUnread((n) => n + 1)} />
             {/* จอแคบเลื่อนแผนที่ซ้ายขวาได้ ไม่บีบจนตัวละครทับกัน */}
             <div className="mt-6 overflow-x-auto">
                 <div className="relative aspect-[16/10] w-full min-w-[640px] overflow-hidden rounded-xl border-4 border-ink/80 bg-paper">
@@ -66,19 +77,27 @@ export function OfficeMap({ projectId, meId, isOwner, members, panels }: Props) 
                         const r = ROOMS[key]
                         const locked = r.ownerOnly && !isOwner
                         const here = me?.room === key
+                        const badge = key === 'MEETING' && unread > 0 ? unread : 0
                         return (
                             <button
                                 key={key}
                                 type="button"
                                 onClick={() => goTo(key)}
                                 aria-pressed={here}
-                                aria-label={`${r.label}${here ? ' (คุณอยู่ที่นี่)' : ''}${locked ? ' (เฉพาะเจ้าของ)' : ''}`}
+                                aria-label={`${r.label}${here ? ' (คุณอยู่ที่นี่)' : ''}${locked ? ' (เฉพาะเจ้าของ)' : ''}${
+                                    badge ? ` (ข้อความใหม่ ${badge})` : ''
+                                }`}
                                 style={{ left: `${r.area.x}%`, top: `${r.area.y}%`, width: `${r.area.w}%`, height: `${r.area.h}%` }}
                                 className={`office-floor absolute flex items-start justify-between p-3 text-left ${here ? 'outline-2 -outline-offset-4 outline-progress' : 'hover:brightness-95'
                                     } ${locked ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                             >
-                                <span className="rounded-md bg-surface/90 px-2 py-0.5 font-display text-sm font-semibold">
+                                <span className="flex items-center gap-2 rounded-md bg-surface/90 px-2 py-0.5 font-display text-sm font-semibold">
                                     {r.label}
+                                    {badge > 0 && (
+                                        <span aria-hidden="true" className="min-w-5 rounded-full bg-danger px-1.5 text-center text-xs leading-5 text-surface">
+                                            {badge > 9 ? '9+' : badge}
+                                        </span>
+                                    )}
                                 </span>
                                 {locked && (
                                     <svg viewBox="0 0 16 16" className="size-4 text-ink-soft" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden="true">
